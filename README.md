@@ -1,6 +1,6 @@
 # Sistema de Check-in
 
-Este projeto implementa um sistema de **Check-in**, com o objetivo de registrar e gerenciar a entrada de usuários em eventos, estabelecimentos ou outros locais.
+Este projeto é um MinimalAPI que implementa um sistema simples de **Check-in**, com o objetivo de registrar e gerenciar a entrada de usuários em eventos, estabelecimentos ou outros locais.
 
 ## Construção
 
@@ -14,7 +14,7 @@ Este projeto implementa um sistema de **Check-in**, com o objetivo de registrar 
 
 ### Banco de dados
 
-Crie uma base de dados chamada `eventoscheckin`
+Script para a base de dados disponível:
 ~~~sql
 -- Base de dados
 create database eventoscheckin;
