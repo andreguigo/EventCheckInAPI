@@ -1,6 +1,6 @@
 # Sistema de Check-in
 
-Este projeto implementa um sistema de **Check-in**, com o objetivo de registrar e gerenciar a entrada de usuários em eventos, estabelecimentos ou outros locais. O sistema é projetado com base em um diagrama de classes, que descreve as principais entidades e suas relações.
+Este projeto implementa um sistema de **Check-in**, com o objetivo de registrar e gerenciar a entrada de usuários em eventos, estabelecimentos ou outros locais.
 
 ## Construção
 
