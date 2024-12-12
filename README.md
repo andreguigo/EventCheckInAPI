@@ -44,7 +44,7 @@ CREATE TABLE Usuarios (
 CREATE TABLE Inscricoes (
     Id CHAR(36) NOT NULL PRIMARY KEY,
     QrCode TEXT,
-    Pin VARCHAR(5),
+    Pin VARCHAR(8),
     EventoId CHAR(36) NOT NULL,
     UsuarioId CHAR(36) NOT NULL,
     FOREIGN KEY (EventoId) REFERENCES Eventos(Id),

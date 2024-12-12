@@ -5,6 +5,17 @@ using EventCheckInAPI.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Config CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:8080") // URL do frontend
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 // Add services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -20,6 +31,9 @@ builder.Services.AddScoped<MySqlConnection>(sp =>
 
 var app = builder.Build();
 
+// Activate CORS
+app.UseCors("AllowFrontend");
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -31,6 +45,13 @@ app.MapGet("/api/eventos", async (MySqlConnection db) =>
     const string query = "SELECT * FROM Eventos";
     var eventos = await db.QueryAsync<Evento>(query);
     return Results.Ok(eventos);
+});
+
+app.MapGet("/api/eventos/{id}", async (Guid id, MySqlConnection db) =>
+{
+    const string query = "SELECT * FROM Eventos WHERE Id = @Id";
+    var evento = await db.QueryAsync<Evento>(query, new { Id = id });
+    return Results.Ok(evento);
 });
 
 app.MapPost("/api/eventos", async (Evento evento, MySqlConnection db) =>
@@ -69,6 +90,13 @@ app.MapGet("/api/usuarios", async (MySqlConnection db) =>
     return Results.Ok(usuarios);
 });
 
+app.MapGet("/api/usuarios/{email}", async (string email, MySqlConnection db) =>
+{
+    const string query = @"SELECT * FROM Usuarios WHERE Email = @Email";
+    var usuario = await db.QueryAsync<Usuario>(query, new { Email = email });
+    return Results.Ok(usuario);
+});
+
 app.MapPost("/api/usuarios", async (Usuario usuario, MySqlConnection db) =>
 {
     usuario.Id = Guid.NewGuid();
@@ -85,10 +113,20 @@ app.MapPost("/api/usuarios", async (Usuario usuario, MySqlConnection db) =>
 
 app.MapPost("/api/inscricoes", async (Inscricao inscricao, MySqlConnection db) =>
 {
+    const string checkQuery = @"SELECT COUNT(*) FROM Inscricoes WHERE EventoId = @EventoId AND UsuarioId = @UsuarioId";
+    var inscrito = await db.ExecuteScalarAsync<int>(checkQuery, new { inscricao.EventoId, inscricao.UsuarioId});
+    if (inscrito > 0)
+    {
+        const string selectPinQuery = @"SELECT Pin FROM Inscricoes WHERE EventoId = @EventoId AND UsuarioId = @UsuarioId";
+        var pin = await db.QueryFirstOrDefaultAsync<string>(selectPinQuery, new { inscricao.EventoId, inscricao.UsuarioId });
+        return Results.Conflict($"Você já se inscreveu para este evento. Seu PIN é: {pin}");
+    }
+
     inscricao.Id = Guid.NewGuid();
-    const string query = @"INSERT INTO Inscricoes (Id, QrCode, Pin, EventoId, UsuarioId) 
+    inscricao.Pin = inscricao.CriarPin();
+    const string insertQuery = @"INSERT INTO Inscricoes (Id, QrCode, Pin, EventoId, UsuarioId) 
                           VALUES (@Id, @QrCode, @Pin, @EventoId, @UsuarioId)";
-    await db.ExecuteAsync(query, inscricao);
+    await db.ExecuteAsync(insertQuery, inscricao);
     return Results.Created($"/api/inscricoes/{inscricao.Id}", inscricao);
 });
 
