@@ -8,6 +8,14 @@ namespace EventCheckInAPI.Models
         public Guid EventoId { get; set; }
         public Guid UsuarioId { get; set; }
 
+        public string CriarPin()
+        {
+            Random random = new Random();
+            return new string(Enumerable.Range(0, 8)
+                                .Select(_ => (char)('0' + random.Next(0, 10)))
+                                .ToArray());
+        }
+
         public bool RealizarCheckin(string qrCode, string pin)
         {
             return QrCode == qrCode || Pin == pin;
